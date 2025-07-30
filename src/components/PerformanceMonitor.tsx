@@ -17,7 +17,7 @@ export default function PerformanceMonitor() {
   });
   const frameCount = useRef(0);
   const lastTime = useRef(performance.now());
-  const animationId = useRef<number>();
+  const animationId = useRef<number | null>(null);
 
   useEffect(() => {
     const measureFPS = () => {

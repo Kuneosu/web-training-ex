@@ -86,18 +86,24 @@ const mockData: DataItem[] = [
   }
 ];
 
-// 2초 지연과 50% 에러 확률을 가진 fetchData 함수
+// 2초 지연을 가진 fetchData 함수 (에러 없음)
 export const fetchData = async (): Promise<DataItem[]> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     // 2초 지연
     setTimeout(() => {
-      // 50% 확률로 에러 발생
-      if (Math.random() < 0.5) {
-        reject(new Error('서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.'));
-      } else {
-        resolve(mockData);
-      }
+      resolve(mockData);
     }, 2000);
+  });
+};
+
+// 에러를 시뮬레이션하는 별도 함수 (100% 확률로 에러 발생)
+export const fetchDataWithError = async (): Promise<DataItem[]> => {
+  return new Promise((resolve, reject) => {
+    // 1.5초 지연
+    setTimeout(() => {
+      // 100% 확률로 에러 발생
+      reject(new Error('에러 모드가 활성화되어 요청이 실패했습니다. 에러 모드를 끄고 다시 시도해주세요.'));
+    }, 1500);
   });
 };
 
