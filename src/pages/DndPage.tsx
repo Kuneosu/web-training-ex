@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -19,8 +19,8 @@ const initialItems = [
   { id: '10', title: '뉴스레터', description: '이메일 구독 및 소식', priority: '중간' }
 ];
 
-// 정렬 가능한 아이템 컴포넌트
-function SortableItem({ item }: { item: typeof initialItems[0] }) {
+// 정렬 가능한 아이템 컴포넌트 (메모이제이션 적용)
+const SortableItem = memo(function SortableItem({ item }: { item: typeof initialItems[0] }) {
   const {
     attributes,
     listeners,
@@ -32,7 +32,7 @@ function SortableItem({ item }: { item: typeof initialItems[0] }) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? 'none' : transition, // 드래그 중에는 트랜지션 비활성화
   };
 
   const getPriorityColor = (priority: string) => {
@@ -48,9 +48,7 @@ function SortableItem({ item }: { item: typeof initialItems[0] }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 ${
-        isDragging ? 'opacity-50 scale-105 shadow-lg' : ''
-      }`}
+      className={`bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md ${isDragging ? 'opacity-50 scale-105 shadow-lg' : 'transition-all duration-200'}`}
     >
       <div className="flex items-center space-x-4">
         {/* 드래그 핸들 */}
@@ -58,6 +56,7 @@ function SortableItem({ item }: { item: typeof initialItems[0] }) {
           {...attributes}
           {...listeners}
           className="cursor-grab active:cursor-grabbing p-2 -m-2 hover:bg-gray-100 rounded-md transition-colors"
+          style={{ touchAction: 'none' }}
         >
           <GripVertical className="w-5 h-5 text-gray-400" />
         </div>
@@ -75,12 +74,12 @@ function SortableItem({ item }: { item: typeof initialItems[0] }) {
       </div>
     </div>
   );
-}
+});
 
 export default function DndPage() {
   const [items, setItems] = useState(initialItems);
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
@@ -91,7 +90,7 @@ export default function DndPage() {
         return arrayMove(items, oldIndex, newIndex);
       });
     }
-  };
+  }, []);
 
   return (
     <div className="min-h-screen px-8 py-16">
