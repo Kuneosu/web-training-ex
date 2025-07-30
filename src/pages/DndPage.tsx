@@ -100,7 +100,7 @@ export default function DndPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl mb-6 shadow-lg">
             <MousePointer className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent mb-4 leading-tight pb-2">
             Drag & Drop Interface
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">

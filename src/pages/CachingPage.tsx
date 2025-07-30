@@ -6,8 +6,7 @@ import { SkeletonCardList } from '../components/SkeletonCard';
 import { Database, AlertCircle, Lightbulb, Code2, RefreshCw, Clock, TrendingUp, Eye, Calendar, Tag, Zap, Timer, Bug, Loader } from 'lucide-react';
 
 // 캐시 테스트를 위한 내부 컴포넌트
-function CachingContent({ componentKey, onCacheTest, fetchCount, setFetchCount }: { 
-  componentKey: number; 
+function CachingContent({ onCacheTest, fetchCount, setFetchCount }: { 
   onCacheTest: () => void;
   fetchCount: number;
   setFetchCount: React.Dispatch<React.SetStateAction<number>>;
@@ -89,7 +88,7 @@ function CachingContent({ componentKey, onCacheTest, fetchCount, setFetchCount }
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl mb-6 shadow-lg">
             <Database className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-4 leading-tight pb-2">
             Caching & Skeleton UI
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -200,61 +199,6 @@ function CachingContent({ componentKey, onCacheTest, fetchCount, setFetchCount }
                   업데이트 중...
                 </div>
               )}
-            </div>
-
-            {/* 컨트롤 버튼 그룹 */}
-            <div className="mb-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">테스트 컨트롤</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button
-                  onClick={onCacheTest}
-                  className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg transition-colors"
-                >
-                  <Database className="w-4 h-4" />
-                  <span className="text-sm">캐시 테스트</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setShowSkeletonPreview(true);
-                    setTimeout(() => setShowSkeletonPreview(false), 3000);
-                  }}
-                  disabled={showSkeletonPreview}
-                  className="flex items-center justify-center space-x-2 bg-purple-500 hover:bg-purple-600 disabled:bg-purple-300 text-white px-4 py-3 rounded-lg transition-colors"
-                >
-                  <Loader className={`w-4 h-4 ${showSkeletonPreview ? 'animate-spin' : ''}`} />
-                  <span className="text-sm">{showSkeletonPreview ? '미리보기 중' : '스켈레톤 UI'}</span>
-                </button>
-                <button
-                  onClick={() => refetch()}
-                  disabled={isFetching}
-                  className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-3 rounded-lg transition-colors"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-                  <span className="text-sm">강제 새로고침</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setSimulateError(!simulateError);
-                    queryClient.invalidateQueries({ queryKey: ['caching-data'] });
-                  }}
-                  className={`flex items-center justify-center space-x-2 ${simulateError ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-500 hover:bg-gray-600'} text-white px-4 py-3 rounded-lg transition-colors`}
-                >
-                  <Bug className="w-4 h-4" />
-                  <span className="text-sm">{simulateError ? '에러 ON' : '에러 OFF'}</span>
-                </button>
-              </div>
-              <div className="mt-3 flex items-center justify-between">
-                <button
-                  onClick={() => setShowComparison(!showComparison)}
-                  className="text-sm text-gray-600 hover:text-gray-800 flex items-center space-x-1"
-                >
-                  <Zap className="w-3 h-3" />
-                  <span>{showComparison ? '성능 비교 숨기기' : '성능 비교 보기'}</span>
-                </button>
-                <div className="text-xs text-gray-500">
-                  각 버튼을 클릭하여 다양한 기능을 테스트해보세요
-                </div>
-              </div>
             </div>
 
             {/* 캐시 상태 표시 */}
@@ -689,7 +633,6 @@ export default function CachingPage() {
   return (
     <CachingContent 
       key={componentKey} 
-      componentKey={componentKey} 
       onCacheTest={handleCacheTest}
       fetchCount={fetchCount}
       setFetchCount={setFetchCount}

@@ -37,6 +37,13 @@ h1 {
   line-height: 1.1;
 }
 
+/* Fix for gradient text clipping with descenders */
+.bg-clip-text {
+  /* Ensure descenders are not clipped */
+  padding-bottom: 0.125rem;
+  line-height: 1.1;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;

@@ -41,7 +41,7 @@ export default function InfiniteScrollPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-6 shadow-lg">
             <Scroll className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 leading-tight pb-2">
             Infinite Scroll & Virtualization
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
