@@ -10,6 +10,16 @@ interface PerformanceStats {
   } | null;
 }
 
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+interface ExtendedPerformance extends Performance {
+  memory?: PerformanceMemory;
+}
+
 export default function PerformanceMonitor() {
   const [stats, setStats] = useState<PerformanceStats>({
     fps: 60,
@@ -31,12 +41,14 @@ export default function PerformanceMonitor() {
         // 메모리 정보 가져오기 (Chrome에서만 작동)
         let memoryInfo = null;
         if ('memory' in performance) {
-          const memory = (performance as any).memory;
-          memoryInfo = {
-            used: Math.round(memory.usedJSHeapSize / 1048576), // MB 단위
-            total: Math.round(memory.jsHeapSizeLimit / 1048576),
-            percent: Math.round((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100)
-          };
+          const memory = (performance as ExtendedPerformance).memory;
+          if (memory) {
+            memoryInfo = {
+              used: Math.round(memory.usedJSHeapSize / 1048576), // MB 단위
+              total: Math.round(memory.jsHeapSizeLimit / 1048576),
+              percent: Math.round((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100)
+            };
+          }
         }
         
         setStats({

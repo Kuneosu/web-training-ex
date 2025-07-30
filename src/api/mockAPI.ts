@@ -98,7 +98,7 @@ export const fetchData = async (): Promise<DataItem[]> => {
 
 // 에러를 시뮬레이션하는 별도 함수 (100% 확률로 에러 발생)
 export const fetchDataWithError = async (): Promise<DataItem[]> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((_, reject) => {
     // 1.5초 지연
     setTimeout(() => {
       // 100% 확률로 에러 발생
