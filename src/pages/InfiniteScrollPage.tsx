@@ -1,6 +1,7 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Scroll, AlertCircle, Lightbulb, Code2, BarChart3, Users } from 'lucide-react';
+import { Scroll, AlertCircle, Lightbulb, Code2, BarChart3, Users, Activity } from 'lucide-react';
+import PerformanceMonitor from '../components/PerformanceMonitor';
 
 // Mock 데이터 생성 함수
 const generateMockData = (count: number) => {
@@ -20,6 +21,9 @@ export default function InfiniteScrollPage() {
   
   // 스크롤 컨테이너 참조
   const parentRef = useRef<HTMLDivElement>(null);
+  
+  // 성능 모니터 표시 상태
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(true);
 
   // 가상화 설정
   const virtualizer = useVirtualizer({
@@ -204,30 +208,30 @@ export default function InfiniteScrollPage() {
             </div>
 
             {/* 성능 정보 */}
-            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-blue-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-blue-600">
+            <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="bg-blue-50 rounded-lg p-3 sm:p-4 text-center overflow-hidden">
+                <div className="text-xl sm:text-2xl font-bold text-blue-600 truncate">
                   {virtualizer.getVirtualItems().length}
                 </div>
-                <div className="text-sm text-blue-800">렌더링된 아이템</div>
+                <div className="text-xs sm:text-sm text-blue-800">렌더링된 아이템</div>
               </div>
-              <div className="bg-green-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-green-600">
+              <div className="bg-green-50 rounded-lg p-3 sm:p-4 text-center overflow-hidden">
+                <div className="text-xl sm:text-2xl font-bold text-green-600 truncate">
                   {items.length.toLocaleString()}
                 </div>
-                <div className="text-sm text-green-800">전체 아이템</div>
+                <div className="text-xs sm:text-sm text-green-800">전체 아이템</div>
               </div>
-              <div className="bg-purple-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600">
+              <div className="bg-purple-50 rounded-lg p-3 sm:p-4 text-center overflow-hidden">
+                <div className="text-xl sm:text-2xl font-bold text-purple-600 truncate">
                   {Math.round(virtualizer.getTotalSize()).toLocaleString()}px
                 </div>
-                <div className="text-sm text-purple-800">가상 높이</div>
+                <div className="text-xs sm:text-sm text-purple-800">가상 높이</div>
               </div>
-              <div className="bg-orange-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-orange-600">
+              <div className="bg-orange-50 rounded-lg p-3 sm:p-4 text-center overflow-hidden">
+                <div className="text-xl sm:text-2xl font-bold text-orange-600 truncate">
                   {((virtualizer.getVirtualItems().length / items.length) * 100).toFixed(2)}%
                 </div>
-                <div className="text-sm text-orange-800">렌더링 비율</div>
+                <div className="text-xs sm:text-sm text-orange-800">렌더링 비율</div>
               </div>
             </div>
 
@@ -237,9 +241,23 @@ export default function InfiniteScrollPage() {
                 현재 화면에 보이는 아이템들만 DOM에 렌더링되어 있는 것을 확인할 수 있습니다.
               </p>
             </div>
+            
+            {/* 성능 모니터 토글 버튼 */}
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <Activity className="w-4 h-4 mr-2" />
+                {showPerformanceMonitor ? '성능 모니터 숨기기' : '성능 모니터 표시'}
+              </button>
+            </div>
           </div>
         </section>
       </div>
+      
+      {/* 성능 모니터 */}
+      {showPerformanceMonitor && <PerformanceMonitor />}
     </div>
   );
 }
