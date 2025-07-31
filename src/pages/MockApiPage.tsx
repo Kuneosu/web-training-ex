@@ -8,6 +8,11 @@ export default function MockApiPage() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<MockApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // MSW API 상태
+  const [mswData, setMswData] = useState<any>(null);
+  const [mswLoading, setMswLoading] = useState(false);
+  const [mswError, setMswError] = useState<string | null>(null);
 
   const handleRequest = async (scenario: 'success' | 'error') => {
     // 상태 초기화
@@ -22,6 +27,28 @@ export default function MockApiPage() {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // MSW API 요청 핸들러
+  const handleMswRequest = async (endpoint: string) => {
+    setMswLoading(true);
+    setMswData(null);
+    setMswError(null);
+
+    try {
+      const response = await fetch(endpoint);
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      setMswData(result);
+    } catch (err) {
+      setMswError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+    } finally {
+      setMswLoading(false);
     }
   };
 
@@ -173,8 +200,8 @@ export default function MockApiPage() {
                     </ul>
                     <div className="mt-4 p-3 bg-indigo-100 rounded-lg">
                       <p className="text-indigo-800 text-sm">
-                        <strong>💡 구현 예정:</strong> MSW를 사용하여 Service Worker 기반의 Mock API를 구현할 예정입니다.
-                        이는 별도의 서버 실행 없이 브라우저에서 네트워크 요청을 가로채는 방식입니다.
+                        <strong>💡 구현 완료:</strong> MSW(Mock Service Worker)를 사용하여 실제 HTTP 엔드포인트를 제공합니다.
+                        브라우저의 개발자 도구 Network 탭에서 실제 API 요청을 확인할 수 있습니다.
                       </p>
                     </div>
                   </div>
@@ -235,25 +262,139 @@ export default function MockApiPage() {
             {/* 선택된 방안에 따른 구현 결과 표시 */}
             {selectedSolution === 'real-mock' ? (
               // 실제 Mock API 구현 결과
-              <div className="mb-8">
-                <div className="bg-amber-50 rounded-xl p-6 border border-amber-200">
-                  <div className="flex items-center mb-3">
-                    <AlertCircle className="w-6 h-6 text-amber-600 mr-2" />
-                    <h3 className="font-bold text-amber-800 text-lg">방안 1: 실제 Mock API - 구현 예정</h3>
-                  </div>
-                  <p className="text-amber-700 mb-4">
-                    MSW(Mock Service Worker)를 사용한 실제 Mock API 구현이 준비 중입니다.
+              <div>
+                {/* 테스트 안내 */}
+                <div className="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                  <h3 className="font-bold text-indigo-800 mb-2 flex items-center">
+                    <Globe className="w-5 h-5 mr-2" />
+                    실제 Mock API 테스트
+                  </h3>
+                  <p className="text-indigo-700 text-sm">
+                    MSW를 통해 구현된 실제 HTTP 엔드포인트를 테스트해보세요.
+                    브라우저 개발자 도구의 Network 탭을 열어 실제 API 요청을 확인할 수 있습니다.
                   </p>
-                  <div className="bg-white rounded-lg p-4 border border-amber-200">
-                    <h4 className="font-semibold text-amber-800 mb-2">구현 예정 기능:</h4>
-                    <ul className="list-disc list-inside text-amber-700 space-y-1 text-sm">
-                      <li>실제 HTTP 요청 처리 (GET /api/users, POST /api/users 등)</li>
-                      <li>브라우저 개발자 도구 Network 탭에서 요청/응답 확인</li>
-                      <li>RESTful API 규칙을 따르는 엔드포인트 구조</li>
-                      <li>데이터 CRUD 작업 시뮬레이션</li>
-                      <li>커스텀 응답 지연 및 에러 시뮬레이션</li>
-                    </ul>
-                  </div>
+                </div>
+
+                {/* API 엔드포인트 버튼들 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                  <button
+                    onClick={() => handleMswRequest('/api/users')}
+                    disabled={mswLoading}
+                    className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                  >
+                    <Server className="w-5 h-5" />
+                    <span>GET /api/users</span>
+                    {mswLoading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+                  </button>
+                  
+                  <button
+                    onClick={() => handleMswRequest('/api/users/1')}
+                    disabled={mswLoading}
+                    className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                  >
+                    <CheckCircle className="w-5 h-5" />
+                    <span>GET /api/users/1</span>
+                    {mswLoading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+                  </button>
+                  
+                  <button
+                    onClick={() => handleMswRequest('/api/users/999')}
+                    disabled={mswLoading}
+                    className="flex items-center justify-center space-x-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                  >
+                    <AlertCircle className="w-5 h-5" />
+                    <span>GET /api/users/999 (404)</span>
+                    {mswLoading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+                  </button>
+                  
+                  <button
+                    onClick={() => handleMswRequest('/api/error')}
+                    disabled={mswLoading}
+                    className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                  >
+                    <XCircle className="w-5 h-5" />
+                    <span>GET /api/error (500)</span>
+                    {mswLoading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+                  </button>
+                </div>
+
+                {/* MSW API 상태 표시 */}
+                <div className="space-y-6">
+                  {/* 로딩 상태 */}
+                  {mswLoading && (
+                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                      <div className="flex items-center justify-center space-x-3">
+                        <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+                        <div className="text-center">
+                          <h3 className="font-bold text-blue-800 text-lg">실제 HTTP 요청 중...</h3>
+                          <p className="text-blue-600 text-sm mt-1">
+                            MSW가 네트워크 요청을 처리하고 있습니다
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 성공 상태 */}
+                  {mswData && !mswLoading && (
+                    <div className="bg-green-50 rounded-xl p-6 border border-green-200">
+                      <div className="flex items-start space-x-3 mb-4">
+                        <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                        <div className="flex-1">
+                          <h3 className="font-bold text-green-800 text-lg">✅ HTTP 요청 성공</h3>
+                          <p className="text-green-600 text-sm mt-1">MSW Mock API에서 응답을 받았습니다.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white border border-green-200 rounded-lg p-4">
+                        <div className="mb-4">
+                          <span className="text-sm font-medium text-gray-600">응답 데이터:</span>
+                          <pre className="bg-gray-50 rounded-lg p-3 text-sm text-gray-800 overflow-x-auto mt-2">
+                            {JSON.stringify(mswData, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 에러 상태 */}
+                  {mswError && !mswLoading && (
+                    <div className="bg-red-50 rounded-xl p-6 border border-red-200">
+                      <div className="flex items-start space-x-3 mb-4">
+                        <XCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
+                        <div className="flex-1">
+                          <h3 className="font-bold text-red-800 text-lg">❌ HTTP 요청 실패</h3>
+                          <p className="text-red-600 text-sm mt-1">MSW Mock API에서 에러 응답을 받았습니다.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white border border-red-200 rounded-lg p-4">
+                        <span className="text-sm font-medium text-gray-600 block mb-2">에러 메시지:</span>
+                        <p className="text-red-700 font-medium bg-red-50 p-3 rounded border">
+                          {mswError}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 초기 상태 */}
+                  {!mswLoading && !mswData && !mswError && (
+                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
+                      <Globe className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                      <h3 className="font-bold text-gray-600 text-lg mb-2">실제 Mock API 테스트 준비</h3>
+                      <p className="text-gray-500 text-sm">
+                        위의 버튼을 클릭하여 다양한 API 엔드포인트를 테스트해보세요.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600 text-center">
+                    💡 <strong>실제 Mock API 검증 포인트:</strong> 
+                    개발자 도구의 Network 탭을 열어 실제 HTTP 요청이 발생하는지 확인하고,
+                    각 엔드포인트별 응답 상태와 데이터를 검증해보세요.
+                  </p>
                 </div>
               </div>
             ) : (
