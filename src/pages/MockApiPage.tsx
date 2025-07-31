@@ -38,6 +38,13 @@ export default function MockApiPage() {
 
     try {
       const response = await fetch(endpoint);
+      
+      // HTML 응답인 경우 (MSW가 활성화되지 않음)
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error('MSW Mock API가 활성화되지 않았습니다. 개발 환경에서 테스트해주세요.');
+      }
+      
       const result = await response.json();
       
       if (!response.ok) {
@@ -46,7 +53,11 @@ export default function MockApiPage() {
       
       setMswData(result);
     } catch (err) {
-      setMswError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      if (err instanceof Error && err.message.includes('Unexpected token')) {
+        setMswError('MSW Mock API가 활성화되지 않았습니다. 현재 환경에서는 이 기능을 사용할 수 없습니다.');
+      } else {
+        setMswError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      }
     } finally {
       setMswLoading(false);
     }
