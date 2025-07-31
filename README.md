@@ -2,6 +2,8 @@
 
 현대적인 웹 개발 기술을 학습하고 실습할 수 있는 예제 모음입니다.
 
+<img width="1624" height="1060" alt="스크린샷 2025-07-31 오후 2 44 56" src="https://github.com/user-attachments/assets/fc5d0245-e42e-43e7-b054-df0d5d9b3b7d" />
+
 ## 📋 프로젝트 소개
 
 이 프로젝트는 React와 TypeScript를 사용하여 실무에서 자주 사용되는 웹 개발 패턴과 기술들을 구현한 예제 모음입니다. 각 예제는 독립적으로 작동하며, 실제 프로젝트에 적용할 수 있는 실용적인 코드를 제공합니다.
@@ -111,6 +113,3 @@ web-training-ex/
 - [Notion 페이지](https://kimkwonsu.notion.site/Web-Training-Examples-2400d6fd2448801aae49e7635b14550e)
 - [라이브 데모](https://web-training-ex.vercel.app)
 
-## 📝 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 공개되어 있습니다.
