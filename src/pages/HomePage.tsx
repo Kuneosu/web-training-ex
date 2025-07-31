@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Scroll, MousePointer, Database, FileText, Server, Sparkles } from 'lucide-react';
+import { Scroll, MousePointer, Database, FileText, Server, Sparkles, Github } from 'lucide-react';
+import notionLogo from '../assets/notion.png';
 
 export default function HomePage() {
   const pages = [
@@ -58,6 +59,33 @@ export default function HomePage() {
         <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
           현대적인 웹 개발 기술을 학습하고 실습할 수 있는 예제 모음입니다
         </p>
+        
+        {/* External Links */}
+        <div className="flex flex-wrap justify-center gap-4 mt-8">
+          <a
+            href="https://github.com/Kuneosu/web-training-ex"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+          >
+            <Github size={20} />
+            <span className="font-medium">GitHub</span>
+          </a>
+          
+          <a
+            href="https://kimkwonsu.notion.site/Web-Training-Examples-2400d6fd2448801aae49e7635b14550e?source=copy_link"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-800 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-gray-200"
+          >
+            <img 
+              src={notionLogo} 
+              alt="Notion" 
+              className="w-5 h-5"
+            />
+            <span className="font-medium">Notion Page</span>
+          </a>
+        </div>
       </div>
 
       {/* Cards Grid - 반응형 그리드 */}
