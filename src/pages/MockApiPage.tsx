@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { mockFetch } from '../api/mockAPI';
 import type { MockApiResponse } from '../api/mockAPI';
-import { Server, AlertCircle, Lightbulb, Code2, CheckCircle, XCircle, Clock, Loader2, Play } from 'lucide-react';
+import { Server, AlertCircle, Lightbulb, Code2, CheckCircle, XCircle, Clock, Loader2, Play, Globe, Timer } from 'lucide-react';
 
 export default function MockApiPage() {
+  const [selectedSolution, setSelectedSolution] = useState<'real-mock' | 'simulator'>('real-mock');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<MockApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -106,43 +107,118 @@ export default function MockApiPage() {
               <div className="p-3 bg-yellow-500 rounded-xl mr-4">
                 <Lightbulb className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">2. 해결 방법: Promise를 이용한 비동기 동작 시뮬레이션</h2>
-            </div>
-            
-            <div className="bg-yellow-50 rounded-xl p-6 mb-6">
-              <h3 className="font-bold text-yellow-800 mb-4 text-lg">핵심 해결책: Promise + setTimeout 조합</h3>
-              <p className="text-yellow-700 leading-relaxed mb-4">
-                JavaScript의 `Promise`와 `setTimeout`을 조합하면 실제 네트워크 통신과 유사한 비동기 동작을 시뮬레이션할 수 있습니다. 
-                함수가 호출되면 즉시 Promise를 반환하여 비동기 처리를 시작하고, `setTimeout`으로 설정된 지연시간 후에 결과를 반환합니다.
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900">2. 해결 방법</h2>
             </div>
 
-            <div className="bg-blue-50 rounded-xl p-6">
-              <h3 className="font-bold text-blue-800 mb-4 text-lg flex items-center">
-                <Code2 className="w-5 h-5 mr-2" />
-                비동기 동작 시뮬레이션 원리와 상태 관리
-              </h3>
-              <div className="text-blue-700 leading-relaxed space-y-3">
-                <p>
-                  Mock API의 비동기 동작과 React 상태 관리의 연동 흐름:
-                </p>
-                <ul className="list-disc list-inside space-y-2 ml-4">
-                  <li><strong>1. 요청 시작:</strong> 버튼 클릭 시 즉시 loading 상태를 true로 변경</li>
-                  <li><strong>2. Promise 생성:</strong> new Promise()로 비동기 작업 객체 생성</li>
-                  <li><strong>3. 지연 시뮬레이션:</strong> setTimeout으로 1.5초 네트워크 지연 구현</li>
-                  <li><strong>4. 조건부 처리:</strong> scenario 파라미터에 따라 resolve(성공) 또는 reject(실패) 실행</li>
-                  <li><strong>5. 상태 업데이트:</strong> 성공 시 data 상태 업데이트, 실패 시 error 상태 업데이트</li>
-                  <li><strong>6. 로딩 완료:</strong> finally 블록에서 loading 상태를 false로 변경</li>
-                </ul>
-                <div className="mt-4 p-3 bg-blue-100 rounded-lg">
-                  <p className="text-blue-800 text-sm">
-                    <strong>💡 핵심 포인트:</strong> Promise는 비동기 작업의 결과를 나타내는 객체로, 
-                    pending(대기) → fulfilled(성공) 또는 rejected(실패) 상태로 전환됩니다. 
-                    이를 통해 실제 API와 동일한 비동기 처리 패턴을 구현할 수 있습니다.
-                  </p>
-                </div>
+            {/* 해결 방안 선택 탭 */}
+            <div className="mb-8">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={() => setSelectedSolution('real-mock')}
+                  className={`flex-1 px-6 py-4 rounded-xl border-2 transition-all ${
+                    selectedSolution === 'real-mock'
+                      ? 'bg-blue-50 border-blue-500 text-blue-700'
+                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-center mb-2">
+                    <Globe className={`w-6 h-6 ${selectedSolution === 'real-mock' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  </div>
+                  <h3 className="font-bold text-lg mb-1">방안 1: 실제 Mock API</h3>
+                  <p className="text-sm">HTTP 엔드포인트를 가진 진짜 Mock API 서버</p>
+                </button>
+                
+                <button
+                  onClick={() => setSelectedSolution('simulator')}
+                  className={`flex-1 px-6 py-4 rounded-xl border-2 transition-all ${
+                    selectedSolution === 'simulator'
+                      ? 'bg-blue-50 border-blue-500 text-blue-700'
+                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-center mb-2">
+                    <Timer className={`w-6 h-6 ${selectedSolution === 'simulator' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  </div>
+                  <h3 className="font-bold text-lg mb-1">방안 2: 비동기 시뮬레이터</h3>
+                  <p className="text-sm">Promise와 setTimeout을 활용한 간단한 시뮬레이션</p>
+                </button>
               </div>
             </div>
+
+            {/* 선택된 해결 방안 내용 */}
+            {selectedSolution === 'real-mock' ? (
+              // 실제 Mock API 방안
+              <div>
+                <div className="bg-blue-50 rounded-xl p-6 mb-6">
+                  <h3 className="font-bold text-blue-800 mb-4 text-lg">방안 1: 실제 Mock API 서버 구축</h3>
+                  <p className="text-blue-700 leading-relaxed mb-4">
+                    MSW(Mock Service Worker), json-server, 또는 Express.js를 활용하여 실제 HTTP 엔드포인트를 제공하는 Mock API 서버를 구축합니다.
+                    이 방식은 실제 네트워크 요청을 처리하며, RESTful API 규칙을 따르는 진정한 의미의 Mock API입니다.
+                  </p>
+                </div>
+
+                <div className="bg-indigo-50 rounded-xl p-6">
+                  <h3 className="font-bold text-indigo-800 mb-4 text-lg flex items-center">
+                    <Code2 className="w-5 h-5 mr-2" />
+                    실제 Mock API의 특징
+                  </h3>
+                  <div className="text-indigo-700 leading-relaxed space-y-3">
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>HTTP 프로토콜 사용:</strong> GET, POST, PUT, DELETE 등 실제 HTTP 메서드 지원</li>
+                      <li><strong>URL 라우팅:</strong> /api/users, /api/products 같은 RESTful 엔드포인트</li>
+                      <li><strong>네트워크 인터셉트:</strong> 브라우저의 실제 네트워크 요청을 가로채어 응답</li>
+                      <li><strong>개발자 도구 통합:</strong> Network 탭에서 요청/응답 확인 가능</li>
+                      <li><strong>데이터 영속성:</strong> 세션 중 데이터 CRUD 작업 시뮬레이션</li>
+                      <li><strong>실제 API와 동일한 경험:</strong> 프론트엔드 코드 수정 없이 실제 API로 전환 가능</li>
+                    </ul>
+                    <div className="mt-4 p-3 bg-indigo-100 rounded-lg">
+                      <p className="text-indigo-800 text-sm">
+                        <strong>💡 구현 예정:</strong> MSW를 사용하여 Service Worker 기반의 Mock API를 구현할 예정입니다.
+                        이는 별도의 서버 실행 없이 브라우저에서 네트워크 요청을 가로채는 방식입니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // 비동기 시뮬레이터 방안
+              <div>
+                <div className="bg-yellow-50 rounded-xl p-6 mb-6">
+                  <h3 className="font-bold text-yellow-800 mb-4 text-lg">방안 2: Promise를 이용한 비동기 동작 시뮬레이션</h3>
+                  <p className="text-yellow-700 leading-relaxed mb-4">
+                    JavaScript의 `Promise`와 `setTimeout`을 조합하면 실제 네트워크 통신과 유사한 비동기 동작을 시뮬레이션할 수 있습니다. 
+                    함수가 호출되면 즉시 Promise를 반환하여 비동기 처리를 시작하고, `setTimeout`으로 설정된 지연시간 후에 결과를 반환합니다.
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 rounded-xl p-6">
+                  <h3 className="font-bold text-blue-800 mb-4 text-lg flex items-center">
+                    <Code2 className="w-5 h-5 mr-2" />
+                    비동기 동작 시뮬레이션 원리와 상태 관리
+                  </h3>
+                  <div className="text-blue-700 leading-relaxed space-y-3">
+                    <p>
+                      Mock API의 비동기 동작과 React 상태 관리의 연동 흐름:
+                    </p>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>1. 요청 시작:</strong> 버튼 클릭 시 즉시 loading 상태를 true로 변경</li>
+                      <li><strong>2. Promise 생성:</strong> new Promise()로 비동기 작업 객체 생성</li>
+                      <li><strong>3. 지연 시뮬레이션:</strong> setTimeout으로 1.5초 네트워크 지연 구현</li>
+                      <li><strong>4. 조건부 처리:</strong> scenario 파라미터에 따라 resolve(성공) 또는 reject(실패) 실행</li>
+                      <li><strong>5. 상태 업데이트:</strong> 성공 시 data 상태 업데이트, 실패 시 error 상태 업데이트</li>
+                      <li><strong>6. 로딩 완료:</strong> finally 블록에서 loading 상태를 false로 변경</li>
+                    </ul>
+                    <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                      <p className="text-blue-800 text-sm">
+                        <strong>💡 핵심 포인트:</strong> Promise는 비동기 작업의 결과를 나타내는 객체로, 
+                        pending(대기) → fulfilled(성공) 또는 rejected(실패) 상태로 전환됩니다. 
+                        이를 통해 실제 API와 동일한 비동기 처리 패턴을 구현할 수 있습니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -156,45 +232,74 @@ export default function MockApiPage() {
               <h2 className="text-2xl font-bold text-gray-900">3. 구현 결과</h2>
             </div>
 
-            {/* 테스트 안내 */}
-            <div className="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-              <h3 className="font-bold text-indigo-800 mb-2 flex items-center">
-                <Play className="w-5 h-5 mr-2" />
-                Mock API 동작 테스트
-              </h3>
-              <p className="text-indigo-700 text-sm">
-                아래 버튼들을 클릭하여 성공/실패 시나리오별 Mock API 동작을 테스트해보세요. 
-                이 페이지의 목적은 UI/UX보다는 Mock API의 동작 자체를 검증하는 것입니다.
-              </p>
-            </div>
+            {/* 선택된 방안에 따른 구현 결과 표시 */}
+            {selectedSolution === 'real-mock' ? (
+              // 실제 Mock API 구현 결과
+              <div className="mb-8">
+                <div className="bg-amber-50 rounded-xl p-6 border border-amber-200">
+                  <div className="flex items-center mb-3">
+                    <AlertCircle className="w-6 h-6 text-amber-600 mr-2" />
+                    <h3 className="font-bold text-amber-800 text-lg">방안 1: 실제 Mock API - 구현 예정</h3>
+                  </div>
+                  <p className="text-amber-700 mb-4">
+                    MSW(Mock Service Worker)를 사용한 실제 Mock API 구현이 준비 중입니다.
+                  </p>
+                  <div className="bg-white rounded-lg p-4 border border-amber-200">
+                    <h4 className="font-semibold text-amber-800 mb-2">구현 예정 기능:</h4>
+                    <ul className="list-disc list-inside text-amber-700 space-y-1 text-sm">
+                      <li>실제 HTTP 요청 처리 (GET /api/users, POST /api/users 등)</li>
+                      <li>브라우저 개발자 도구 Network 탭에서 요청/응답 확인</li>
+                      <li>RESTful API 규칙을 따르는 엔드포인트 구조</li>
+                      <li>데이터 CRUD 작업 시뮬레이션</li>
+                      <li>커스텀 응답 지연 및 에러 시뮬레이션</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // 비동기 시뮬레이터 테스트 안내
+              <div className="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                <h3 className="font-bold text-indigo-800 mb-2 flex items-center">
+                  <Play className="w-5 h-5 mr-2" />
+                  비동기 시뮬레이터 동작 테스트
+                </h3>
+                <p className="text-indigo-700 text-sm">
+                  아래 버튼들을 클릭하여 성공/실패 시나리오별 비동기 동작을 테스트해보세요. 
+                  Promise와 setTimeout을 활용한 간단한 시뮬레이션 방식입니다.
+                </p>
+              </div>
+            )}
 
-            {/* 버튼 영역 */}
-            <div className="flex flex-wrap gap-4 mb-8">
-              <button
-                onClick={() => handleRequest('success')}
-                disabled={loading}
-                className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white px-6 py-3 rounded-lg transition-colors font-medium"
-              >
-                <CheckCircle className="w-5 h-5" />
-                <span>성공 데이터 요청</span>
-                {loading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
-              </button>
-              
-              <button
-                onClick={() => handleRequest('error')}
-                disabled={loading}
-                className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-6 py-3 rounded-lg transition-colors font-medium"
-              >
-                <XCircle className="w-5 h-5" />
-                <span>에러 발생 요청</span>
-                {loading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
-              </button>
-            </div>
+            {/* 버튼 영역 - 비동기 시뮬레이터만 표시 */}
+            {selectedSolution === 'simulator' && (
+              <div className="flex flex-wrap gap-4 mb-8">
+                <button
+                  onClick={() => handleRequest('success')}
+                  disabled={loading}
+                  className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                  <span>성공 데이터 요청</span>
+                  {loading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+                </button>
+                
+                <button
+                  onClick={() => handleRequest('error')}
+                  disabled={loading}
+                  className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                >
+                  <XCircle className="w-5 h-5" />
+                  <span>에러 발생 요청</span>
+                  {loading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+                </button>
+              </div>
+            )}
 
-            {/* 상태 표시 영역 */}
-            <div className="space-y-6">
-              {/* 로딩 상태 */}
-              {loading && (
+            {/* 상태 표시 영역 - 비동기 시뮬레이터만 표시 */}
+            {selectedSolution === 'simulator' && (
+              <div className="space-y-6">
+                {/* 로딩 상태 */}
+                {loading && (
                 <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
                   <div className="flex items-center justify-center space-x-3">
                     <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
@@ -269,25 +374,28 @@ export default function MockApiPage() {
                 </div>
               )}
 
-              {/* 초기 상태 */}
-              {!loading && !data && !error && (
-                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
-                  <Server className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <h3 className="font-bold text-gray-600 text-lg mb-2">Mock API 테스트 준비</h3>
-                  <p className="text-gray-500 text-sm">
-                    위의 버튼을 클릭하여 성공 또는 실패 시나리오를 테스트해보세요.
-                  </p>
-                </div>
-              )}
-            </div>
+                {/* 초기 상태 */}
+                {!loading && !data && !error && (
+                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
+                    <Server className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <h3 className="font-bold text-gray-600 text-lg mb-2">비동기 시뮬레이터 테스트 준비</h3>
+                    <p className="text-gray-500 text-sm">
+                      위의 버튼을 클릭하여 성공 또는 실패 시나리오를 테스트해보세요.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
-            <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 text-center">
-                💡 <strong>Mock API 검증 포인트:</strong> 
-                각 버튼 클릭 시 1.5초 지연 후 응답이 오는지 확인하고, 
-                성공/실패 시나리오별로 적절한 상태 변화가 일어나는지 검증해보세요.
-              </p>
-            </div>
+            {selectedSolution === 'simulator' && (
+              <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600 text-center">
+                  💡 <strong>비동기 시뮬레이터 검증 포인트:</strong> 
+                  각 버튼 클릭 시 1.5초 지연 후 응답이 오는지 확인하고, 
+                  성공/실패 시나리오별로 적절한 상태 변화가 일어나는지 검증해보세요.
+                </p>
+              </div>
+            )}
           </div>
         </section>
       </div>
