@@ -25,6 +25,58 @@
 
 ## 기술적 구현
 
+### Native HTML5 Drag and Drop API 구현
+
+#### 드래그 상태 관리
+```typescript
+interface DragState {
+  draggingId: string | null;
+  dragOverId: string | null;
+  initialY: number;
+  dragOverPosition: 'above' | 'below' | null;
+}
+
+const [dragState, setDragState] = useState<DragState>({
+  draggingId: null,
+  dragOverId: null,
+  initialY: 0,
+  dragOverPosition: null
+});
+```
+
+#### Native 드래그 핸들러
+```typescript
+const handleNativeDragStart = useCallback((e: React.DragEvent, id: string) => {
+  setDragState(prev => ({ ...prev, draggingId: id, initialY: e.clientY }));
+  e.dataTransfer.effectAllowed = 'move';
+}, []);
+
+const handleNativeDragOver = useCallback((e: React.DragEvent, id: string) => {
+  if (dragState.draggingId && dragState.draggingId !== id) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midpoint = rect.top + rect.height / 2;
+    const position = e.clientY < midpoint ? 'above' : 'below';
+    
+    setDragState(prev => ({ 
+      ...prev, 
+      dragOverId: id,
+      dragOverPosition: position
+    }));
+  }
+}, [dragState.draggingId]);
+```
+
+#### 삽입 위치 인디케이터
+```typescript
+{/* 삽입 위치 인디케이터 */}
+{isDragOver && dragOverPosition === 'above' && (
+  <div className="absolute -top-2 left-0 right-0 h-1 bg-blue-500 rounded-full shadow-lg" />
+)}
+{isDragOver && dragOverPosition === 'below' && (
+  <div className="absolute -bottom-2 left-0 right-0 h-1 bg-blue-500 rounded-full shadow-lg" />
+)}
+```
+
 ### 초기 데이터 구조
 ```typescript
 const initialItems = [
@@ -107,10 +159,15 @@ const SortableItem = memo(function SortableItem({ item }) {
 - **@dnd-kit 라이브러리**: 현대적인 드래그 앤 드롭 솔루션
 - **구현 원리**: DndContext, SortableContext, useSortable 훅의 역할
 
-### 4. 구현 결과 섹션
+### 4. 구현 결과 섹션 (dnd-kit 라이브러리)
 - **드래그 앤 드롭 리스트**: 실제 정렬 가능한 아이템 목록
 - **현재 순서**: 실시간 순서 정보 표시
 - **우선순위 분류**: 카테고리별 아이템 통계
+
+### 5. Native 구현 섹션 (HTML5 Drag and Drop API)
+- **라이브러리 없는 구현**: 순수 HTML5 API 활용한 드래그 앤 드롭
+- **삽입 위치 인디케이터**: 드롭될 위치를 시각적으로 표시
+- **구현 방식 비교**: 라이브러리 vs Native 접근법의 장단점 분석
 
 ## 사용된 라이브러리
 
@@ -200,10 +257,12 @@ transition: isDragging ? 'none' : transition
 4. **실무 적용**: 관리자 시스템에서의 실제 활용 사례 체험
 
 ### 실습 포인트
-- 드래그 핸들 클릭 후 드래그하여 순서 변경
-- 키보드로 Tab → Space → 화살표키 순서로 접근성 테스트
+- **라이브러리 버전**: 드래그 핸들 클릭 후 드래그하여 순서 변경
+- **Native 버전**: 아이템 전체를 드래그하여 순서 변경, 삽입 위치 인디케이터 확인
+- 키보드로 Tab → Space → 화살표키 순서로 접근성 테스트 (라이브러리 버전)
 - 모바일에서 터치 드래그 동작 확인
 - 우선순위별 아이템 분포 실시간 변화 관찰
+- 두 구현 방식의 UX 차이점 비교 체험
 
 ## 기술적 장점
 
@@ -213,10 +272,68 @@ transition: isDragging ? 'none' : transition
 3. **유연성**: 다양한 정렬 전략과 충돌 감지 알고리즘 지원
 4. **현대적**: TypeScript 지원과 React Hooks 기반 설계
 
-### 기존 HTML5 Drag API 대비 장점
-- **크로스 브라우저**: 모든 주요 브라우저에서 일관된 동작
-- **터치 지원**: 모바일 디바이스에서 자연스러운 터치 드래그
-- **커스터마이징**: 자유로운 스타일링과 애니메이션 적용
-- **개발자 경험**: 간단한 API와 풍부한 문서화
+### Native HTML5 API vs 라이브러리 비교
 
-이 컴포넌트는 현대 웹 애플리케이션에서 필수적인 드래그 앤 드롭 기능을 접근성과 성능을 모두 고려하여 구현한 완성도 높은 예제입니다.
+#### 라이브러리 사용 (dnd-kit) 장점
+- ✅ 접근성 기능 내장 (키보드, 스크린리더)
+- ✅ 터치 디바이스 완벽 지원
+- ✅ 충돌 감지 알고리즘 제공
+- ✅ 애니메이션 및 전환 효과 내장
+- ⚠️ 번들 크기 증가 (약 30KB)
+- ⚠️ 추가 의존성 관리 필요
+
+#### Native API 직접 구현 장점
+- ✅ 추가 의존성 없음
+- ✅ 번들 크기 최소화
+- ✅ 완전한 커스터마이징 가능
+- ⚠️ 접근성 기능 직접 구현 필요
+- ⚠️ 터치 디바이스 별도 처리 필요
+- ⚠️ 크로스 브라우저 이슈 처리 필요
+
+### 선택 가이드
+
+#### 라이브러리 사용이 적합한 경우
+- 복잡한 드래그 앤 드롭 인터랙션
+- 접근성이 중요한 프로젝트
+- 빠른 개발 속도가 필요한 경우
+- 터치 디바이스 지원이 필수인 경우
+
+#### Native 구현이 적합한 경우
+- 간단한 드래그 앤 드롭 기능
+- 번들 크기 최적화가 중요한 경우
+- 의존성을 최소화하고 싶은 경우
+- 완전한 커스터마이징이 필요한 경우
+
+## Native 구현의 핵심 기술
+
+### HTML5 Drag and Drop 이벤트
+```typescript
+// 드래그 시작
+onDragStart={(e) => onDragStart(e, item.id)}
+
+// 드래그 중 (다른 요소 위로)
+onDragOver={(e) => {
+  e.preventDefault(); // 드롭 허용
+  onDragOver(e, item.id);
+}}
+
+// 드롭 완료
+onDrop={(e) => {
+  e.preventDefault();
+  onDrop(e, item.id);
+}}
+```
+
+### 위치 감지 로직
+```typescript
+const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+const midpoint = rect.top + rect.height / 2;
+const position = e.clientY < midpoint ? 'above' : 'below';
+```
+
+### 커서 스타일 최적화
+```css
+cursor: isDragging ? 'grabbing' : 'grab'
+```
+
+이 컴포넌트는 현대 웹 애플리케이션에서 필수적인 드래그 앤 드롭 기능을 두 가지 접근법(라이브러리 vs Native)으로 구현하여, 각각의 장단점을 실습을 통해 체험할 수 있는 완성도 높은 교육 예제입니다.

@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Scroll, AlertCircle, Lightbulb, Code2, BarChart3, Users, Activity, CheckSquare, Square, MoveRight, Send } from 'lucide-react';
+import { Scroll, AlertCircle, Lightbulb, Code2, BarChart3, Users, Activity, CheckSquare, Square, Send } from 'lucide-react';
 import PerformanceMonitor from '../components/PerformanceMonitor';
 
 // 아이템 타입 정의

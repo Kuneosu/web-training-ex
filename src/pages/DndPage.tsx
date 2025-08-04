@@ -76,8 +76,103 @@ const SortableItem = memo(function SortableItem({ item }: { item: typeof initial
   );
 });
 
+// Native DnD 구현을 위한 타입 정의
+interface DragState {
+  draggingId: string | null;
+  dragOverId: string | null;
+  initialY: number;
+  dragOverPosition: 'above' | 'below' | null;
+}
+
+// Native DnD 아이템 컴포넌트
+const NativeDraggableItem = memo(function NativeDraggableItem({ 
+  item, 
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+  isDragging,
+  isDragOver,
+  dragOverPosition
+}: { 
+  item: typeof initialItems[0];
+  onDragStart: (e: React.DragEvent, id: string) => void;
+  onDragEnd: (e: React.DragEvent) => void;
+  onDragOver: (e: React.DragEvent, id: string) => void;
+  onDrop: (e: React.DragEvent, id: string) => void;
+  isDragging: boolean;
+  isDragOver: boolean;
+  dragOverPosition: 'above' | 'below' | null;
+}) {
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case '높음': return 'bg-red-100 text-red-800';
+      case '중간': return 'bg-yellow-100 text-yellow-800';
+      case '낮음': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div
+      draggable
+      onDragStart={(e) => onDragStart(e, item.id)}
+      onDragEnd={onDragEnd}
+      onDragOver={(e) => {
+        e.preventDefault();
+        onDragOver(e, item.id);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDrop(e, item.id);
+      }}
+      className={`
+        bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md
+        transition-all duration-200 relative
+        ${isDragging ? 'opacity-50 scale-95' : ''}
+      `}
+      style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+    >
+      {/* 삽입 위치 인디케이터 */}
+      {isDragOver && dragOverPosition === 'above' && (
+        <div className="absolute -top-2 left-0 right-0 h-1 bg-blue-500 rounded-full shadow-lg" />
+      )}
+      {isDragOver && dragOverPosition === 'below' && (
+        <div className="absolute -bottom-2 left-0 right-0 h-1 bg-blue-500 rounded-full shadow-lg" />
+      )}
+      
+      <div className="flex items-center space-x-4">
+        {/* 드래그 핸들 */}
+        <div 
+          className="p-2 -m-2 hover:bg-gray-100 rounded-md transition-colors cursor-grab active:cursor-grabbing"
+        >
+          <GripVertical className="w-5 h-5 text-gray-400" />
+        </div>
+        
+        {/* 콘텐츠 */}
+        <div className="flex-1 select-none">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold text-gray-900">{item.title}</h3>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(item.priority)}`}>
+              {item.priority}
+            </span>
+          </div>
+          <p className="text-sm text-gray-600">{item.description}</p>
+        </div>
+      </div>
+    </div>
+  );
+});
+
 export default function DndPage() {
   const [items, setItems] = useState(initialItems);
+  const [nativeItems, setNativeItems] = useState(initialItems);
+  const [dragState, setDragState] = useState<DragState>({
+    draggingId: null,
+    dragOverId: null,
+    initialY: 0,
+    dragOverPosition: null
+  });
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
@@ -91,6 +186,52 @@ export default function DndPage() {
       });
     }
   }, []);
+
+  // Native DnD 핸들러들
+  const handleNativeDragStart = useCallback((e: React.DragEvent, id: string) => {
+    setDragState(prev => ({ ...prev, draggingId: id, initialY: e.clientY }));
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const handleNativeDragEnd = useCallback(() => {
+    setDragState({ draggingId: null, dragOverId: null, initialY: 0, dragOverPosition: null });
+  }, []);
+
+  const handleNativeDragOver = useCallback((e: React.DragEvent, id: string) => {
+    if (dragState.draggingId && dragState.draggingId !== id) {
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      const position = e.clientY < midpoint ? 'above' : 'below';
+      
+      setDragState(prev => ({ 
+        ...prev, 
+        dragOverId: id,
+        dragOverPosition: position
+      }));
+    }
+  }, [dragState.draggingId]);
+
+  const handleNativeDrop = useCallback((_e: React.DragEvent, dropId: string) => {
+    const { draggingId } = dragState;
+    
+    if (draggingId && draggingId !== dropId) {
+      setNativeItems((items) => {
+        const dragIndex = items.findIndex(item => item.id === draggingId);
+        const dropIndex = items.findIndex(item => item.id === dropId);
+        
+        if (dragIndex !== -1 && dropIndex !== -1) {
+          const newItems = [...items];
+          const [draggedItem] = newItems.splice(dragIndex, 1);
+          newItems.splice(dropIndex, 0, draggedItem);
+          return newItems;
+        }
+        
+        return items;
+      });
+    }
+    
+    setDragState({ draggingId: null, dragOverId: null, initialY: 0, dragOverPosition: null });
+  }, [dragState]);
 
   return (
     <div className="min-h-screen px-8 py-16">
@@ -288,6 +429,109 @@ export default function DndPage() {
                 💡 <strong>사용 팁:</strong> 드래그 핸들(⋮⋮)을 클릭하고 드래그하여 순서를 변경하세요. 
                 키보드 사용자는 Tab키로 핸들에 포커스 후 Space바를 눌러 드래그 모드를 활성화할 수 있습니다.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* 4. Native 구현 섹션 */}
+        <section className="mt-16">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+            <div className="flex items-center mb-6">
+              <div className="p-3 bg-purple-500 rounded-xl mr-4">
+                <Code2 className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">4. 라이브러리 없이 직접 구현</h2>
+            </div>
+
+            <div className="bg-purple-50 rounded-xl p-6 mb-6">
+              <h3 className="font-bold text-purple-800 mb-4 text-lg">Native HTML5 Drag and Drop API 활용</h3>
+              <p className="text-purple-700 leading-relaxed mb-4">
+                브라우저의 기본 HTML5 Drag and Drop API를 사용하여 라이브러리 없이 드래그 앤 드롭을 구현합니다. 
+                이 방법은 추가적인 의존성 없이 순수한 웹 표준 API만으로 기능을 구현할 수 있습니다.
+              </p>
+            </div>
+
+            <div className="bg-indigo-50 rounded-xl p-6 mb-6">
+              <h3 className="font-bold text-indigo-800 mb-4 text-lg flex items-center">
+                <Code2 className="w-5 h-5 mr-2" />
+                Native 구현 핵심 원리
+              </h3>
+              <div className="text-indigo-700 leading-relaxed space-y-3">
+                <p>
+                  <strong>HTML5 Drag and Drop API</strong>를 사용한 구현 단계:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li><strong>draggable 속성:</strong> 요소를 드래그 가능하도록 설정</li>
+                  <li><strong>onDragStart:</strong> 드래그 시작 시 아이템 ID 저장 및 효과 설정</li>
+                  <li><strong>onDragOver:</strong> 드래그 중인 요소가 다른 요소 위로 지나갈 때 처리</li>
+                  <li><strong>onDrop:</strong> 드롭 시 아이템 순서 재배열 로직 실행</li>
+                  <li><strong>시각적 피드백:</strong> CSS 클래스를 통한 드래그/드롭 상태 표시</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Native 드래그 앤 드롭 구현 */}
+            <div className="mb-6">
+              <div className="bg-gray-50 rounded-xl p-6">
+                <h3 className="font-bold text-gray-800 mb-4 flex items-center">
+                  <GripVertical className="w-5 h-5 mr-2" />
+                  Native API로 구현한 드래그 앤 드롭
+                </h3>
+                <p className="text-gray-600 text-sm mb-6">
+                  라이브러리 없이 브라우저 기본 API만으로 구현한 드래그 앤 드롭입니다. 아이템을 직접 드래그하여 순서를 변경해보세요.
+                </p>
+                
+                <div className="space-y-4">
+                  {nativeItems.map((item) => (
+                    <NativeDraggableItem
+                      key={item.id}
+                      item={item}
+                      onDragStart={handleNativeDragStart}
+                      onDragEnd={handleNativeDragEnd}
+                      onDragOver={handleNativeDragOver}
+                      onDrop={handleNativeDrop}
+                      isDragging={dragState.draggingId === item.id}
+                      isDragOver={dragState.dragOverId === item.id}
+                      dragOverPosition={dragState.dragOverId === item.id ? dragState.dragOverPosition : null}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 구현 비교 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-green-50 rounded-xl p-6">
+                <h4 className="font-bold text-green-800 mb-3">라이브러리 사용 (dnd-kit)</h4>
+                <ul className="space-y-2 text-sm text-green-700">
+                  <li>✅ 접근성 기능 내장 (키보드, 스크린리더)</li>
+                  <li>✅ 터치 디바이스 완벽 지원</li>
+                  <li>✅ 충돌 감지 알고리즘 제공</li>
+                  <li>✅ 애니메이션 및 전환 효과 내장</li>
+                  <li>⚠️ 번들 크기 증가 (약 30KB)</li>
+                  <li>⚠️ 추가 의존성 관리 필요</li>
+                </ul>
+              </div>
+              
+              <div className="bg-purple-50 rounded-xl p-6">
+                <h4 className="font-bold text-purple-800 mb-3">Native API 직접 구현</h4>
+                <ul className="space-y-2 text-sm text-purple-700">
+                  <li>✅ 추가 의존성 없음</li>
+                  <li>✅ 번들 크기 최소화</li>
+                  <li>✅ 완전한 커스터마이징 가능</li>
+                  <li>⚠️ 접근성 기능 직접 구현 필요</li>
+                  <li>⚠️ 터치 디바이스 별도 처리 필요</li>
+                  <li>⚠️ 크로스 브라우저 이슈 처리 필요</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 rounded-xl p-6">
+              <h4 className="font-bold text-yellow-800 mb-3">💡 선택 가이드</h4>
+              <div className="text-yellow-700 text-sm space-y-2">
+                <p><strong>라이브러리 사용이 적합한 경우:</strong> 복잡한 드래그 앤 드롭 인터랙션, 접근성 중요, 빠른 개발 속도가 필요한 경우</p>
+                <p><strong>Native 구현이 적합한 경우:</strong> 간단한 드래그 앤 드롭, 번들 크기 최적화가 중요, 의존성을 최소화하고 싶은 경우</p>
+              </div>
             </div>
           </div>
         </section>
